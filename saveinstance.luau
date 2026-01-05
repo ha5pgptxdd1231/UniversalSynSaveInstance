@@ -96,7 +96,7 @@ local gethiddenproperty_fallback
 do -- * Load Region of Déjà Vu
 	
 
-	--[[gethiddenproperty_fallback = function(instance, propertyName)
+	gethiddenproperty_fallback = function(instance, propertyName)
     local methods = {gethiddenproperty, getpropertyvalue, get_hidden_property}
     
     for _, method in ipairs(methods) do
@@ -109,8 +109,8 @@ do -- * Load Region of Déjà Vu
     end
     
     return nil
-end]]
-    gethiddenproperty_fallback = function(instance, propertyName)
+end
+    --[[gethiddenproperty_fallback = function(instance, propertyName)
     -- Method 1: Metatable reflection
     local mt = getrawmetatable(game)
     if mt then
@@ -181,7 +181,7 @@ end]]
     end
     
     return nil
-end
+end]]
 	if gethiddenproperty then
 		local o, r = pcall(gethiddenproperty, workspace, "StreamOutBehavior")
 		if not o or r ~= nil and typeof(r) ~= "EnumItem" then -- * Tests if gethiddenproperty is broken
