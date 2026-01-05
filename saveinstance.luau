@@ -94,7 +94,7 @@ local service = setmetatable({}, {
 
 local gethiddenproperty_fallback
 do -- * Load Region of Déjà Vu
-	local UGCValidationService -- = service.UGCValidationService
+	
 
 	gethiddenproperty_fallback = function(instance, propertyName)
     local methods = {gethiddenproperty, getpropertyvalue, get_hidden_property}
