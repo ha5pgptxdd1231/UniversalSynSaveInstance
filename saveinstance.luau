@@ -96,7 +96,7 @@ local gethiddenproperty_fallback
 do -- * Load Region of Déjà Vu
 	
 
-	gethiddenproperty_fallback = function(instance, propertyName)
+	--[[gethiddenproperty_fallback = function(instance, propertyName)
     local methods = {gethiddenproperty, getpropertyvalue, get_hidden_property}
     
     for _, method in ipairs(methods) do
@@ -105,6 +105,78 @@ do -- * Load Region of Déjà Vu
             if ok and result ~= nil then
                 return result
             end
+        end
+    end
+    
+    return nil
+end]]
+    gethiddenproperty_fallback = function(instance, propertyName)
+    -- Method 1: Metatable reflection
+    local mt = getrawmetatable(game)
+    if mt then
+        local oldIndex = mt.__index
+        local success, value = pcall(function()
+            if typeof(oldIndex) == "function" then
+                return oldIndex(instance, propertyName)
+            elseif typeof(oldIndex) == "table" then
+                return oldIndex[propertyName]
+            end
+        end)
+        if success and value ~= nil then
+            return value
+        end
+    end
+    
+    -- Method 2: Direct instance metatable
+    local instMt = getrawmetatable(instance)
+    if instMt and instMt.__index then
+        local oldNamecall = instMt.__namecall
+        local success, value = pcall(function()
+            setreadonly(instMt, false)
+            local result = instMt.__index(instance, propertyName)
+            setreadonly(instMt, true)
+            return result
+        end)
+        if success and value ~= nil then
+            return value
+        end
+    end
+    
+    -- Method 3: Cloneref bypass
+    if cloneref then
+        local clonedInstance = cloneref(instance)
+        local success, value = pcall(function()
+            return clonedInstance[propertyName]
+        end)
+        if success and value ~= nil then
+            return value
+        end
+    end
+    
+    -- Method 4: Debug getinfo/getupvalue approach
+    if debug and debug.getupvalue then
+        local success, value = pcall(function()
+            local func = function() return instance[propertyName] end
+            return func()
+        end)
+        if success then
+            return value
+        end
+    end
+    
+    -- Method 5: Wrapped property access with hookmetamethod bypass
+    if hookmetamethod and restorefunction then
+        local success, value = pcall(function()
+            local originalIndex
+            originalIndex = hookmetamethod(game, "__index", function(self, key)
+                return originalIndex(self, key)
+            end)
+            local result = originalIndex(instance, propertyName)
+            restorefunction(mt.__index)
+            return result
+        end)
+        if success and value ~= nil then
+            return value
         end
     end
     
