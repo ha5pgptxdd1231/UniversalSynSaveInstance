@@ -97,12 +97,19 @@ do -- * Load Region of Déjà Vu
 	local UGCValidationService -- = service.UGCValidationService
 
 	gethiddenproperty_fallback = function(instance, propertyName)
-		if not UGCValidationService then
-			UGCValidationService = service.UGCValidationService
-		end
-		return UGCValidationService:GetPropertyValue(instance, propertyName) -- TODO Sadly there's no way to tell whether value is actually nil or the function just couldn't read it (always returns nil for "Class" category properties)
-		-- TODO `category ~= "Class"` causes WeldConstraint Part1Internal to be read as nil and not get unfiltered. Currently, there are no properties of category "Class" that match the following: NotScriptable, can be read with gethiddenproperty_fallback accurately (it always outputs nil for "Class" category, making that check useless anyway) & don't have a NotScriptableFix.
-	end
+    local methods = {gethiddenproperty, getpropertyvalue, get_hidden_property}
+    
+    for _, method in ipairs(methods) do
+        if typeof(method) == "function" then
+            local ok, result = pcall(method, instance, propertyName)
+            if ok and result ~= nil then
+                return result
+            end
+        end
+    end
+    
+    return nil
+end
 	if gethiddenproperty then
 		local o, r = pcall(gethiddenproperty, workspace, "StreamOutBehavior")
 		if not o or r ~= nil and typeof(r) ~= "EnumItem" then -- * Tests if gethiddenproperty is broken
